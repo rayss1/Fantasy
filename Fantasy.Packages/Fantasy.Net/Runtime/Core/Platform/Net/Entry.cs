@@ -52,7 +52,7 @@ public static class Entry
     /// <summary>
     /// 启动Fantasy.Net
     /// </summary>
-    public static async FTask Start(ILog log = null)
+    public static async FTask Start(ILog log = null, CancellationToken cancellationToken = default)
     {
         // 初始化
         await Initialize(log);
@@ -98,10 +98,26 @@ public static class Entry
         // 设置当前程序已经在运行中
         ProgramDefine.IsAppRunning = true;
         
-        while (!Volatile.Read(ref _isClosed))
+        while (!Volatile.Read(ref _isClosed) && !cancellationToken.IsCancellationRequested)
         {
             ThreadScheduler.Update();
             Thread.Sleep(1);
+        }
+
+        if (cancellationToken.IsCancellationRequested && !Volatile.Read(ref _isClosed))
+        {
+            // Closing a Scene can resume work on the main scheduler. Keep pumping it
+            // until every Process has drained instead of abandoning asynchronous
+            // disposal when the host receives SIGTERM or Ctrl+C.
+            var closeTask = Close();
+
+            while (!closeTask.IsCompleted)
+            {
+                ThreadScheduler.Update();
+                Thread.Sleep(1);
+            }
+
+            await closeTask;
         }
     }
     

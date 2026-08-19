@@ -48,6 +48,11 @@ jobs:
         shell: pwsh
         run: ./.github/scripts/Validate-Runtime.ps1
 
+      - name: Validate graceful SIGTERM shutdown
+        if: runner.os == 'Linux'
+        shell: bash
+        run: ./.github/scripts/Validate-GracefulShutdown.sh
+
       - name: Audit dependencies
         shell: pwsh
         run: ./.github/scripts/Test-Dependencies.ps1
