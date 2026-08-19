@@ -11,5 +11,5 @@ public partial class ChatInfo
     [JsonIgnore]
     [ProtoIgnore]
     [IgnoreDataMember]
-    public Scene Scene { get; set; }
+    public Scene Scene { get; set; } = null!;
 }

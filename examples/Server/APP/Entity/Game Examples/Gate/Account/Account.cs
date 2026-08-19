@@ -5,7 +5,7 @@ namespace Fantasy;
 
 public sealed class Account : Entity
 {
-    public string Name;
+    public string Name = string.Empty;
 
     public EntityReference<Session> Session;
 }

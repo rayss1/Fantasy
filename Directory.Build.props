@@ -1,0 +1,6 @@
+<Project>
+  <!-- Stop parent repositories from implicitly applying their MSBuild policy to this fork. -->
+  <PropertyGroup>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+</Project>

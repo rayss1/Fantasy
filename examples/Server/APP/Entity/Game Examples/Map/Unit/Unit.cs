@@ -19,11 +19,11 @@ public enum UnitType
 /// </summary>
 public sealed class PlayerUnit : Entity
 {
-    public string Name;
+    public string Name = string.Empty;
     public UnitType UnitType;
     
     [BsonIgnore]
     [MemoryPackIgnore]
     [ProtoIgnore]
-    public TransformComponent Transform;
+    public TransformComponent Transform = null!;
 }
