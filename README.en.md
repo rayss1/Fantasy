@@ -3,8 +3,8 @@
 ![Fantasy](https://socialify.git.ci/qq362946/Fantasy/image?custom_description=%F0%9F%8E%AE+High-performance+distributed+game+server+framework+for+large-scale+multiplayer+online+games%0A%F0%9F%9A%80+Build+your+game+empire+with+C%23+%7C+From+indie+games+to+large-scale+MMOs%0A%E2%9A%A1+Zero+Reflection+%7C+%F0%9F%9A%80+Native+AOT+%7C+%F0%9F%8C%90+Multi-Protocol+%7C+%F0%9F%94%A5+Distributed&description=1&font=Inter&forks=1&issues=1&logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII%3D&name=1&pattern=Signal&pulls=1&stargazers=1&theme=Auto)
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![.NET](https://img.shields.io/badge/.NET-8.0+-purple.svg)](https://dotnet.microsoft.com/)
-[![C#](https://img.shields.io/badge/C%23-12.0-brightgreen.svg)](https://docs.microsoft.com/en-us/dotnet/csharp/)
+[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![C#](https://img.shields.io/badge/C%23-14.0-brightgreen.svg)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 [![Unity](https://img.shields.io/badge/Unity-2022.3.62+-black.svg)](https://unity.com/)
 [![Stars](https://img.shields.io/github/stars/qq362946/Fantasy?style=social)](https://github.com/qq362946/Fantasy/stargazers)
 
@@ -233,7 +233,7 @@ public class PlayerAwakeSystem : AwakeSystem<Player>
 
 | Component | Version | Notes |
 |------|---------------------------|------|
-| **.NET SDK** | 8.0+ | [Download](https://dotnet.microsoft.com/download) |
+| **.NET SDK** | 10.0.202 (pinned by `global.json`) | [Download](https://dotnet.microsoft.com/download) |
 | **Unity** | 2022.3.62+ | Optional, for client development |
 | **IDE** | VS 2022 / Rider / VS Code | Rider or VS 2022 recommended |
 | **MongoDB** | 4.0+ | Optional database; memory mode can run without it |
