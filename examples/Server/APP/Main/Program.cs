@@ -10,6 +10,35 @@
 // ================================================================================
 
 using Fantasy;
+using System.Runtime.InteropServices;
+
+using var shutdown = new CancellationTokenSource();
+PosixSignalRegistration? sigtermRegistration = null;
+PosixSignalRegistration? sigintRegistration = null;
+ConsoleCancelEventHandler? cancelKeyPressHandler = null;
+
+if (OperatingSystem.IsWindows())
+{
+    cancelKeyPressHandler = (_, eventArgs) =>
+    {
+        eventArgs.Cancel = true;
+        shutdown.Cancel();
+    };
+    Console.CancelKeyPress += cancelKeyPressHandler;
+}
+else
+{
+    sigtermRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, context =>
+    {
+        context.Cancel = true;
+        shutdown.Cancel();
+    });
+    sigintRegistration = PosixSignalRegistration.Create(PosixSignal.SIGINT, context =>
+    {
+        context.Cancel = true;
+        shutdown.Cancel();
+    });
+}
 
 try
 {
@@ -22,11 +51,22 @@ try
     // 可选：传入 null 或省略参数以使用控制台日志
     var logger = new Fantasy.NLog("Server");
     // 使用配置的日志系统启动 Fantasy.Net 框架
-    await Fantasy.Platform.Net.Entry.Start(logger);
+    await Fantasy.Platform.Net.Entry.Start(logger, shutdown.Token);
+    Console.WriteLine("Shutdown Complete");
 }
 catch (Exception ex)
 {
     Console.Error.WriteLine($"服务器初始化过程中发生致命错误：{ex}");
-    Environment.Exit(1);
+    Environment.ExitCode = 1;
 }
+finally
+{
+    if (cancelKeyPressHandler is not null)
+    {
+        Console.CancelKeyPress -= cancelKeyPressHandler;
+    }
 
+    sigtermRegistration?.Dispose();
+    sigintRegistration?.Dispose();
+    global::NLog.LogManager.Shutdown();
+}
