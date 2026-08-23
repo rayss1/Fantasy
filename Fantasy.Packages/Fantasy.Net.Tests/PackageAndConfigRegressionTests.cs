@@ -66,6 +66,7 @@ public sealed class PackageAndConfigRegressionTests
 
             await RunDotNetAsync(root, "publish", "Consumer.csproj", "-c", "Release", "-o", "publish", "--nologo");
             AssertSingleApplicationConfig(root);
+            await RunDotNetAsync(root, Path.Combine("publish", "Consumer.dll"));
         }
         finally
         {
@@ -109,6 +110,7 @@ public sealed class PackageAndConfigRegressionTests
             await RunDotNetAsync(root, "restore", "Consumer.csproj", "--configfile", "NuGet.config", "--nologo");
             await RunDotNetAsync(root, "publish", "Consumer.csproj", "-c", "Release", "-o", "publish", "--no-restore", "--nologo");
             AssertSingleApplicationConfig(root);
+            await RunDotNetAsync(root, Path.Combine("publish", "Consumer.dll"));
         }
         finally
         {
@@ -125,6 +127,11 @@ public sealed class PackageAndConfigRegressionTests
 
             System.Console.WriteLine("Fantasy consumer smoke test");
             _ = typeof(Fantasy.Network.KCP.KCPClientNetwork);
+            if (Fantasy.ProgramDefine.VERSION != "Fantasy 2026.1.1002 Official version")
+            {
+                throw new System.InvalidOperationException(
+                    $"Unexpected Fantasy runtime identity: {Fantasy.ProgramDefine.VERSION}");
+            }
 
             static async System.Threading.Tasks.Task VerifyCancellationAwareEntry(
                 System.Threading.CancellationToken cancellationToken)
