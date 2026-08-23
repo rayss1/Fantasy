@@ -17,7 +17,7 @@ public sealed class PackageAndConfigRegressionTests
     private static readonly string TrackedPackage = Path.Combine(
         RepositoryRoot,
         "nupkg",
-        "Fantasy-Net.2026.1.1001.nupkg");
+        "Fantasy-Net.2026.1.1002.nupkg");
 
     [Test]
     public void TrackedPackageContainsOnlyNet10LibraryAsset()
@@ -89,7 +89,7 @@ public sealed class PackageAndConfigRegressionTests
                     <TargetFramework>net10.0</TargetFramework>
                   </PropertyGroup>
                   <ItemGroup>
-                    <PackageReference Include="Fantasy-Net" Version="2026.1.1001" />
+                    <PackageReference Include="Fantasy-Net" Version="2026.1.1002" />
                   </ItemGroup>
                 </Project>
                 """);
@@ -118,7 +118,20 @@ public sealed class PackageAndConfigRegressionTests
 
     private static void WriteConsumerSource(string root)
     {
-        File.WriteAllText(Path.Combine(root, "Program.cs"), "System.Console.WriteLine(\"Fantasy consumer smoke test\");");
+        File.WriteAllText(
+            Path.Combine(root, "Program.cs"),
+            """
+            using Fantasy.Platform.Net;
+
+            System.Console.WriteLine("Fantasy consumer smoke test");
+            _ = typeof(Fantasy.Network.KCP.KCPClientNetwork);
+
+            static async System.Threading.Tasks.Task VerifyCancellationAwareEntry(
+                System.Threading.CancellationToken cancellationToken)
+            {
+                await Entry.Start(cancellationToken: cancellationToken);
+            }
+            """);
         File.Copy(
             Path.Combine(RepositoryRoot, "Fantasy.Packages", "Fantasy.Net", "Fantasy.config"),
             Path.Combine(root, "Fantasy.config"));
