@@ -8,7 +8,7 @@ using Fantasy.PacketParser.Interface;
 
 namespace Fantasy.Scheduler
 {
-#if FANTASY_UNITY || FANTASY_CONSOLE
+#if FANTASY_UNITY || FANTASY_CONSOLE || FANTASY_NET
     /// <summary>
     /// 提供了一个用于客户端网络消息调度和处理的抽象基类。
     /// </summary>
@@ -81,17 +81,6 @@ namespace Fantasy.Scheduler
                     throw new NotSupportedException($"Received unsupported message protocolCode:{packInfo.ProtocolCode}");
                 }
             }
-        }
-    }
-#endif
-#if FANTASY_NET
-    internal sealed class ClientMessageScheduler(Scene scene) : ANetworkMessageScheduler(scene)
-    {
-        public override FTask Scheduler(Session session, APackInfo packInfo)
-        {
-            var protocolCode = packInfo.ProtocolCode;
-            packInfo.Dispose();
-            throw new NotSupportedException($"ClientMessageScheduler Received unsupported message protocolCode:{protocolCode}");
         }
     }
 #endif
