@@ -35,7 +35,7 @@ namespace Fantasy.Network.KCP
             self.CheckUpdate();
         }
     }
-    internal sealed class KCPClientNetwork : AClientNetwork
+    public sealed class KCPClientNetwork : AClientNetwork
     {
         private Kcp _kcp;
         private Socket _socket;

@@ -124,6 +124,7 @@ public sealed class PackageAndConfigRegressionTests
             using Fantasy.Platform.Net;
 
             System.Console.WriteLine("Fantasy consumer smoke test");
+            _ = typeof(Fantasy.Network.KCP.KCPClientNetwork);
 
             static async System.Threading.Tasks.Task VerifyCancellationAwareEntry(
                 System.Threading.CancellationToken cancellationToken)
