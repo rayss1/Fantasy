@@ -17,7 +17,7 @@ public sealed class PackageAndConfigRegressionTests
     private static readonly string TrackedPackage = Path.Combine(
         RepositoryRoot,
         "nupkg",
-        "Fantasy-Net.2026.1.1002.nupkg");
+        "Fantasy-Net.2026.1.1003.nupkg");
 
     [Test]
     public void TrackedPackageContainsOnlyNet10LibraryAsset()
@@ -90,7 +90,7 @@ public sealed class PackageAndConfigRegressionTests
                     <TargetFramework>net10.0</TargetFramework>
                   </PropertyGroup>
                   <ItemGroup>
-                    <PackageReference Include="Fantasy-Net" Version="2026.1.1002" />
+                    <PackageReference Include="Fantasy-Net" Version="2026.1.1003" />
                   </ItemGroup>
                 </Project>
                 """);
@@ -127,10 +127,34 @@ public sealed class PackageAndConfigRegressionTests
 
             System.Console.WriteLine("Fantasy consumer smoke test");
             _ = typeof(Fantasy.Network.KCP.KCPClientNetwork);
-            if (Fantasy.ProgramDefine.VERSION != "Fantasy 2026.1.1002 Official version")
+            if (Fantasy.ProgramDefine.VERSION != "Fantasy 2026.1.1003 Official version")
             {
                 throw new System.InvalidOperationException(
                     $"Unexpected Fantasy runtime identity: {Fantasy.ProgramDefine.VERSION}");
+            }
+
+            Fantasy.Network.KCP.KCPSettings.ConfigureOuterMtu(1150);
+            Fantasy.Network.KCP.KCPSettings outerKcp =
+                Fantasy.Network.KCP.KCPSettings.Create(Fantasy.Network.NetworkTarget.Outer);
+            if (outerKcp.Mtu != 1150 || Fantasy.Network.KCP.KCPSettings.OuterMtu != 1150)
+            {
+                throw new System.InvalidOperationException("The configured outer KCP MTU was not applied.");
+            }
+
+            Fantasy.Network.KCP.KCPSettings.ConfigureOuterMtu(1150);
+            bool rejectedLateChange = false;
+            try
+            {
+                Fantasy.Network.KCP.KCPSettings.ConfigureOuterMtu(1149);
+            }
+            catch (System.InvalidOperationException)
+            {
+                rejectedLateChange = true;
+            }
+
+            if (!rejectedLateChange)
+            {
+                throw new System.InvalidOperationException("A late outer KCP MTU change was accepted.");
             }
 
             static async System.Threading.Tasks.Task VerifyCancellationAwareEntry(
