@@ -7,10 +7,48 @@ namespace Fantasy.Network.KCP
 {
     public class KCPSettings
     {
+        private const int DefaultOuterMtu = 470;
+        private const int MaximumInternetSafeOuterMtu = 1150;
+        private static readonly object OuterSettingsLock = new();
+        private static int _outerMtu = DefaultOuterMtu;
+        private static bool _outerSettingsCreated;
+
         public int Mtu { get; private set; }
         public int SendWindowSize { get; private set; }
         public int ReceiveWindowSize { get; private set; }
         public int MaxSendWindowSize { get; private set; }
+
+        public static int OuterMtu
+        {
+            get
+            {
+                lock (OuterSettingsLock)
+                {
+                    return _outerMtu;
+                }
+            }
+        }
+
+        public static void ConfigureOuterMtu(int mtu)
+        {
+            if (mtu is < DefaultOuterMtu or > MaximumInternetSafeOuterMtu)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(mtu),
+                    $"The outer KCP MTU must be between {DefaultOuterMtu} and {MaximumInternetSafeOuterMtu} bytes.");
+            }
+
+            lock (OuterSettingsLock)
+            {
+                if (_outerSettingsCreated && _outerMtu != mtu)
+                {
+                    throw new InvalidOperationException(
+                        "The outer KCP MTU cannot change after an outer KCP network has been created.");
+                }
+
+                _outerMtu = mtu;
+            }
+        }
 
         public static KCPSettings Create(NetworkTarget networkTarget)
         {
@@ -23,7 +61,11 @@ namespace Fantasy.Network.KCP
                     // 外网设置470的原因:
                     // 1、mtu设置过大有可能路由器过滤掉
                     // 2、降低 mtu 到 470，同样数据虽然会发更多的包，但是小包在路由层优先级更高
-                    settings.Mtu = 470;
+                    lock (OuterSettingsLock)
+                    {
+                        _outerSettingsCreated = true;
+                        settings.Mtu = _outerMtu;
+                    }
 #if FANTASY_NET
                     settings.SendWindowSize = 8192;
                     settings.ReceiveWindowSize = 8192;
