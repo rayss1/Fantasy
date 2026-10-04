@@ -17,7 +17,7 @@ public sealed class PackageAndConfigRegressionTests
     private static readonly string TrackedPackage = Path.Combine(
         RepositoryRoot,
         "nupkg",
-        "Fantasy-Net.2026.1.1003.nupkg");
+        "Fantasy-Net.2026.1.1004-ainative.1.nupkg");
 
     [Test]
     public void TrackedPackageContainsOnlyNet10LibraryAsset()
@@ -90,7 +90,7 @@ public sealed class PackageAndConfigRegressionTests
                     <TargetFramework>net10.0</TargetFramework>
                   </PropertyGroup>
                   <ItemGroup>
-                    <PackageReference Include="Fantasy-Net" Version="2026.1.1003" />
+                    <PackageReference Include="Fantasy-Net" Version="2026.1.1004-ainative.1" />
                   </ItemGroup>
                 </Project>
                 """);
@@ -127,7 +127,7 @@ public sealed class PackageAndConfigRegressionTests
 
             System.Console.WriteLine("Fantasy consumer smoke test");
             _ = typeof(Fantasy.Network.KCP.KCPClientNetwork);
-            if (Fantasy.ProgramDefine.VERSION != "Fantasy 2026.1.1003 Official version")
+            if (Fantasy.ProgramDefine.VERSION != "Fantasy 2026.1.1004-ainative.1 AI-Native fork")
             {
                 throw new System.InvalidOperationException(
                     $"Unexpected Fantasy runtime identity: {Fantasy.ProgramDefine.VERSION}");

@@ -521,53 +521,49 @@ namespace Fantasy.Helper
 
         /// <summary>
         /// 将 Socket 接收缓冲区大小设置为操作系统限制。
-        /// 尝试增加接收缓冲区大小的次数 = 默认 + 最大增加 100 MB。
+        /// 有界设置：默认请求最多增加 100 MB，不逐步线性探测。
         /// </summary>
         /// <param name="socket">要设置接收缓冲区大小的 Socket。</param>
         /// <param name="stepSize">每次增加的步长大小。</param>
-        /// <param name="attempts">尝试增加缓冲区大小的次数。</param>
+        /// <param name="attempts">最大增长步数；选项写入不超过 32 次。</param>
         public static void SetReceiveBufferToOSLimit(this Socket socket, int stepSize = 1024, int attempts = 100_000)
         {
-            // setting a too large size throws a socket exception.
-            // so let's keep increasing until we encounter it.
-            for (int i = 0; i < attempts; ++i)
+            SetBufferWithinBudget(() => socket.ReceiveBufferSize, value => socket.ReceiveBufferSize = value, stepSize, attempts);
+        }
+
+        /// <summary>Sets a bounded send-buffer target; uses at most 32 option writes.</summary>
+        public static void SetSendBufferToOSLimit(this Socket socket, int stepSize = 1024, int attempts = 100_000)
+        {
+            SetBufferWithinBudget(() => socket.SendBufferSize, value => socket.SendBufferSize = value, stepSize, attempts);
+        }
+
+        // Initialization only: no linear probing on the owning Scene thread.
+        internal static void SetBufferWithinBudget(Func<int> read, Action<int> write, int stepSize, int attempts)
+        {
+            if (attempts <= 0 || stepSize == 0) return;
+            if (stepSize < 0) throw new ArgumentOutOfRangeException(nameof(stepSize));
+            int initial;
+            try { initial = read(); }
+            catch (SocketException) { return; }
+            long upper = Math.Min((long)attempts, ((long)int.MaxValue - initial) / stepSize);
+            long lower = 0;
+            bool first = true;
+            for (int probe = 0; probe < 32 && lower < upper; ++probe)
             {
-                // increase in 1 KB steps
+                long step = first ? upper : lower + (upper - lower + 1) / 2;
+                first = false;
+                int requested = (int)(initial + step * stepSize);
                 try
                 {
-                    socket.ReceiveBufferSize += stepSize;
+                    write(requested);
+                    // Respect OS clamping/scaling; never grow from a scaled result.
+                    if (read() != requested) return;
+                    lower = step;
                 }
-                catch (SocketException)
-                {
-                    break;
-                }
+                catch (SocketException) { upper = step - 1; }
             }
         }
 
-        /// <summary>
-        /// 将 Socket 发送缓冲区大小设置为操作系统限制。
-        /// 尝试增加发送缓冲区大小的次数 = 默认 + 最大增加 100 MB。
-        /// </summary>
-        /// <param name="socket">要设置发送缓冲区大小的 Socket。</param>
-        /// <param name="stepSize">每次增加的步长大小。</param>
-        /// <param name="attempts">尝试增加缓冲区大小的次数。</param>
-        public static void SetSendBufferToOSLimit(this Socket socket, int stepSize = 1024, int attempts = 100_000)
-        {
-            // setting a too large size throws a socket exception.
-            // so let's keep increasing until we encounter it.
-            for (var i = 0; i < attempts; ++i)
-            {
-                // increase in 1 KB steps
-                try
-                {
-                    socket.SendBufferSize += stepSize;
-                }
-                catch (SocketException)
-                {
-                    break;
-                }
-            }
-        }
     }
 }
 #endif 
